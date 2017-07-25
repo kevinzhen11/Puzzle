@@ -1,15 +1,20 @@
 package solvepuzzle;
 
+import java.awt.Font;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 /*
  *  NOTE: The file_in file has to be adjacent to the src folder in this Eclipse project, eg. not in src/solvepuzzle or inside
  *  src, as Puzzle.java will throw a FileNotFoundException if that happens
  */
 
-public class Puzzle {
+public class Puzzle extends JFrame{
 	
 	private static String file_in = "puzzle.csv"; 
 	private static Scanner my_scanner = new Scanner(System.in);
@@ -54,9 +59,9 @@ public class Puzzle {
 	} // serves to make sure we don't tip over the table boundaries
 	
 	public static boolean searchLetter(Letter[][] table, char[] word_arr, Letter letter, 
-			int direction, int word_idx, int start_x, int start_y){
+			int direction, int word_idx, int start_x, int start_y, String endWord){
 		Letter endLetter;
-		if(word_idx == word_arr.length){ // base case to make sure we didn't hit the end
+		if(word_idx == word_arr.length - 1){ // base case to make sure we didn't hit the end
 			System.out.println("Initial: (" + start_x + "," + start_y + ")");
 			return true;
 		}
@@ -69,12 +74,13 @@ public class Puzzle {
 			case 4: endLetter = topLeft(table, letter); break;
 			case 5: endLetter = topRight(table, letter); break;
 			case 6: endLetter = bottomLeft(table, letter); break;
-			case 7: endLetter = bottomRight(table, letter); break;
-			default: endLetter = null; break;
+			default: endLetter = bottomRight(table, letter); break;
 			}
+			endWord += endLetter.getLetter();
 			System.out.println("Direction " + direction + " "+ letter.toString() 
-			+ "\n\t" + endLetter.toString());
-			return searchLetter(table, word_arr, endLetter, direction, word_idx + 1, start_x, start_y);
+			+ "\n\t" + endLetter.toString() + "\n\t\t" + endWord + " at word_idx " + word_idx);
+			return searchLetter(table, word_arr, endLetter, direction, word_idx + 1, 
+					start_x, start_y, endWord);
 		}
 		return false;
 	}
@@ -84,13 +90,15 @@ public class Puzzle {
 		for(int i = 0; i < SIZE; i++){
 			for(int j = 0; j < SIZE; j++){
 				if(letters[0] == table[i][j].getLetter()){
-					System.out.println("Table[" + i + "][" + j +"] has letter " + letters[0]);
+					//System.out.println("Table[" + i + "][" + j +"] has letter " + letters[0]);
 					for(int k = 1; k < 8; k++){
-						searchLetter(table, letters, table[i][j], k, 0, i, j);
+						if(searchLetter(table, letters, table[i][j], k, 0, 
+								i, j, Character.toString(letters[0]))) return;
 					}
 				}
 			}
 		}
+		System.out.println("Word not found in supplied table.");
 		return;
 	}
 	
@@ -112,20 +120,34 @@ public class Puzzle {
 		return table;
 	}
 	
-	public static void main(String[] args) throws FileNotFoundException {	
+	public static JTextArea displayTable(Letter[][] table, JTextArea textArea){
+		for(int i = 0 ; i < SIZE; i++){
+			for(int j = 0 ; j < SIZE; j++){
+				textArea.append(table[i][j].toStringWords() + "  ");
+			}
+			textArea.append("\n");
+		}
+		return textArea;
+	}
+	
+	public static void main(String[] args)throws FileNotFoundException {	
 		Letter[][] table = readFile(file_in); // get table from file
 		
 		// System.out.print("Enter the word you wish to find in " + file_in + ": ");
 		// String word = my_scanner.next(); // take in user input
 		
-		for(int i = 0 ; i < SIZE; i++){
-			for(int j = 0 ; j < SIZE; j++){
-				System.out.print(table[i][j].toStringWords() + "  ");
-			}
-			System.out.println();
-		}
-		
 		String word = "albany";	
 		searchWord(table, word);
+		
+		JTextArea textArea = new JTextArea(SIZE, SIZE);
+		JScrollPane scrollPane = new JScrollPane(textArea); 
+		textArea.setEditable(false);
+		textArea.setFont(new Font("Serif", Font.BOLD, 16));
+		
+		Puzzle main_gui = new Puzzle();
+		main_gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		main_gui.setSize(500,500);
+		main_gui.setVisible(true);
+		
 	}
 }
