@@ -48,6 +48,31 @@ public class Puzzle {
 		return table[current.getX() + 1][current.getY() + 1];
 	}
 	
+	public static boolean searchLetter(Letter[][] table, String word, int direction,
+			int word_idx){
+		
+		if(word_idx == word.length()){ // base case to make sure we didn't hit the end
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static void searchWord(Letter[][] table, String word){
+		String[] letters = word.split(""); // split the word into an arr of letter
+		for(int i = 0; i < SIZE; i++){
+			for(int j = 0; j < SIZE; j++){
+				if(letters[0].equals(table[i][j].getLetter())){
+					// TODO: recursive solution
+					for(int k = 0; k < 8; k++){
+						searchLetter(table, word, k, 0);
+					}
+				}
+			}
+		}
+		return;
+	}
+	
 	public static Letter[][] readFile(String file_in) throws FileNotFoundException{
 		Letter[][] table = new Letter[SIZE][SIZE]; // 2D array to hold the table in .csv file
 		String[] line_split = new String[SIZE]; // String to hold current line once it's split via commas
@@ -66,16 +91,11 @@ public class Puzzle {
 		return table;
 	}
 	
-	public void searchWord(Letter[][] table, String word){
-		String[] letters = word.split(""); // split the word into an arr of letter
-		return;
-	}
-	
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws FileNotFoundException {	
+		Letter[][] table = readFile(file_in); // get table from file
+		
 		// System.out.print("Enter the word you wish to find in " + file_in + ": ");
 		// String word = my_scanner.next(); // take in user input
-
-		Letter[][] table = readFile(file_in); // get table from file
 		
 		for(int i = 0 ; i < SIZE; i++){
 			for(int j = 0 ; j < SIZE; j++){
@@ -94,5 +114,4 @@ public class Puzzle {
 				+ "\nBottom Left " + bottomLeft(table, test).toString()
 				+ "\nBottom Right " + bottomRight(table, test).toString());
 	}
-
 }
