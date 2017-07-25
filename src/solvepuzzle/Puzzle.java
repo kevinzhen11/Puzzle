@@ -48,24 +48,45 @@ public class Puzzle {
 		return table[current.getX() + 1][current.getY() + 1];
 	}
 	
-	public static boolean searchLetter(Letter[][] table, String word, int direction,
-			int word_idx){
-		
-		if(word_idx == word.length()){ // base case to make sure we didn't hit the end
+	public static boolean isValidCoord(Letter letter){
+		return letter.getY() >= 0 && letter.getY() < SIZE 
+				&& letter.getX() >= 0 && letter.getX() < SIZE;
+	} // serves to make sure we don't tip over the table boundaries
+	
+	public static boolean searchLetter(Letter[][] table, char[] word_arr, Letter letter, 
+			int direction, int word_idx, int start_x, int start_y){
+		Letter endLetter;
+		if(word_idx == word_arr.length){ // base case to make sure we didn't hit the end
+			System.out.println("Initial: (" + start_x + "," + start_y + ")");
 			return true;
 		}
-		
+		if(isValidCoord(letter) && word_arr[word_idx] == letter.getLetter()){
+			switch(direction){
+			case 0: endLetter = left(table, letter); break;
+			case 1: endLetter = right(table, letter); break;
+			case 2: endLetter = up(table, letter); break;
+			case 3: endLetter = down(table, letter); break;
+			case 4: endLetter = topLeft(table, letter); break;
+			case 5: endLetter = topRight(table, letter); break;
+			case 6: endLetter = bottomLeft(table, letter); break;
+			case 7: endLetter = bottomRight(table, letter); break;
+			default: endLetter = null; break;
+			}
+			System.out.println("Direction " + direction + " "+ letter.toString() 
+			+ "\n\t" + endLetter.toString());
+			return searchLetter(table, word_arr, endLetter, direction, word_idx + 1, start_x, start_y);
+		}
 		return false;
 	}
 	
 	public static void searchWord(Letter[][] table, String word){
-		String[] letters = word.split(""); // split the word into an arr of letter
+		char[] letters = word.toCharArray(); // split the word into an arr of letter
 		for(int i = 0; i < SIZE; i++){
 			for(int j = 0; j < SIZE; j++){
-				if(letters[0].equals(table[i][j].getLetter())){
-					// TODO: recursive solution
-					for(int k = 0; k < 8; k++){
-						searchLetter(table, word, k, 0);
+				if(letters[0] == table[i][j].getLetter()){
+					System.out.println("Table[" + i + "][" + j +"] has letter " + letters[0]);
+					for(int k = 1; k < 8; k++){
+						searchLetter(table, letters, table[i][j], k, 0, i, j);
 					}
 				}
 			}
@@ -84,7 +105,7 @@ public class Puzzle {
 			curr_line = file_scanner.next();
 			line_split = curr_line.split(",");
 			for(int i = 0; i < SIZE; i++){
-				table[counter][i] = new Letter(counter,i,line_split[i]);
+				table[counter][i] = new Letter(counter,i,line_split[i].charAt(0));
 			}
 			counter += 1;
 		}
@@ -104,14 +125,7 @@ public class Puzzle {
 			System.out.println();
 		}
 		
-		Letter test = table[1][5];
-		System.out.println(test.toString() + "\nLeft " + left(table, test).toString()
-				+ "\nRight " + right(table, test).toString()
-				+ "\nUp " + up(table, test).toString()
-				+ "\nDown " + down(table, test).toString()
-				+ "\nTop Left " + topLeft(table, test).toString()
-				+ "\nTop Right " + topRight(table, test).toString()
-				+ "\nBottom Left " + bottomLeft(table, test).toString()
-				+ "\nBottom Right " + bottomRight(table, test).toString());
+		String word = "albany";	
+		searchWord(table, word);
 	}
 }
