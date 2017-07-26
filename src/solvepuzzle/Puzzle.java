@@ -1,13 +1,15 @@
 package solvepuzzle;
 
+import java.awt.Color;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /*
  *  NOTE: The file_in file has to be adjacent to the src folder in this Eclipse project, eg. not in src/solvepuzzle or inside
@@ -59,28 +61,43 @@ public class Puzzle extends JFrame{
 	} // serves to make sure we don't tip over the table boundaries
 	
 	public static boolean searchLetter(Letter[][] table, char[] word_arr, Letter letter, 
-			int direction, int word_idx, int start_x, int start_y, String endWord){
+			int direction, int word_idx, String endWord){
 		Letter endLetter;
 		if(word_idx == word_arr.length - 1){ // base case to make sure we didn't hit the end
-			System.out.println("Initial: (" + start_x + "," + start_y + ")");
 			return true;
 		}
 		if(isValidCoord(letter) && word_arr[word_idx] == letter.getLetter()){
 			switch(direction){
-			case 0: endLetter = left(table, letter); break;
-			case 1: endLetter = right(table, letter); break;
-			case 2: endLetter = up(table, letter); break;
-			case 3: endLetter = down(table, letter); break;
-			case 4: endLetter = topLeft(table, letter); break;
-			case 5: endLetter = topRight(table, letter); break;
-			case 6: endLetter = bottomLeft(table, letter); break;
-			default: endLetter = bottomRight(table, letter); break;
+			case 0: 
+				if(letter.getY() - 1 >= 0) endLetter = left(table, letter); 
+				else endLetter = letter; break;
+			case 1: 
+				if(letter.getY() + 1 < SIZE) endLetter = right(table, letter); 
+				else endLetter = letter; break;
+			case 2: 
+				if(letter.getX() - 1 >= 0) endLetter = up(table, letter); 
+				else endLetter = letter; break;
+			case 3: 
+				if(letter.getX() + 1 < SIZE) endLetter = down(table, letter); 
+				else endLetter = letter; break;
+			case 4: 
+				if(letter.getX() - 1 >= 0 && letter.getY() - 1 >= 0) endLetter = topLeft(table, letter);
+				else endLetter = letter; break;
+			case 5: 
+				if(letter.getX() - 1 >= 0 && letter.getY() + 1 < SIZE) endLetter = topRight(table, letter); 
+				else endLetter = letter; break;
+			case 6: 
+				if(letter.getX() + 1 < SIZE && letter.getY() - 1 >= 0) endLetter = bottomLeft(table, letter); 
+				else endLetter = letter; break;
+			default: 
+				if(letter.getX() + 1 < SIZE && letter.getY() + 1 < SIZE) endLetter = bottomRight(table, letter); 
+				else endLetter = letter; break;
 			}
 			endWord += endLetter.getLetter();
 			System.out.println("Direction " + direction + " "+ letter.toString() 
 			+ "\n\t" + endLetter.toString() + "\n\t\t" + endWord + " at word_idx " + word_idx);
 			return searchLetter(table, word_arr, endLetter, direction, word_idx + 1, 
-					start_x, start_y, endWord);
+					endWord);
 		}
 		return false;
 	}
@@ -91,9 +108,9 @@ public class Puzzle extends JFrame{
 			for(int j = 0; j < SIZE; j++){
 				if(letters[0] == table[i][j].getLetter()){
 					//System.out.println("Table[" + i + "][" + j +"] has letter " + letters[0]);
-					for(int k = 1; k < 8; k++){
+					for(int k = 0; k < 8; k++){
 						if(searchLetter(table, letters, table[i][j], k, 0, 
-								i, j, Character.toString(letters[0]))) return;
+								Character.toString(letters[0]))) return;
 					}
 				}
 			}
@@ -120,34 +137,44 @@ public class Puzzle extends JFrame{
 		return table;
 	}
 	
-	public static JTextArea displayTable(Letter[][] table, JTextArea textArea){
-		for(int i = 0 ; i < SIZE; i++){
-			for(int j = 0 ; j < SIZE; j++){
-				textArea.append(table[i][j].toStringWords() + "  ");
-			}
-			textArea.append("\n");
-		}
-		return textArea;
-	}
-	
 	public static void main(String[] args)throws FileNotFoundException {	
-		Letter[][] table = readFile(file_in); // get table from file
+		Letter[][] table = readFile(file_in); // get table from files
 		
-		// System.out.print("Enter the word you wish to find in " + file_in + ": ");
-		// String word = my_scanner.next(); // take in user input
+		// String[] words = new String[4];
+		String[] words = {"albany", "buffalo", "syracuse", "rochester"};
+		for(int i = 0; i < 4; i++){
+			/*
+			System.out.print("Enter the word you wish to find in " + file_in + ": ");
+			String word = my_scanner.next(); // take in user input
+			searchWord(table,word);
+			*/
+		}
+		searchWord(table, "rochester");
+	
 		
-		String word = "albany";	
-		searchWord(table, word);
-		
-		JTextArea textArea = new JTextArea(SIZE, SIZE);
-		JScrollPane scrollPane = new JScrollPane(textArea); 
-		textArea.setEditable(false);
-		textArea.setFont(new Font("Serif", Font.BOLD, 16));
-		
-		Puzzle main_gui = new Puzzle();
-		main_gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		main_gui.setSize(500,500);
-		main_gui.setVisible(true);
-		
+		JPanel grid = new JPanel();
+        grid.setLayout(new GridLayout(20, 200));
+        grid.setVisible(true);
+        
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+            	JLabel label = new JLabel("  " + Character.toString(table[i][j].toStringWords()) 
+            			+ " ");
+            	label.setFont(new Font("Serif", Font.BOLD, 20));
+            	if(table[i][j].getLetter() == 'a'){
+            		label.setOpaque(true);
+            		label.setBackground(Color.YELLOW);
+            	}
+                grid.add(label);
+            }
+            grid.add(new JLabel("\n"));
+        }
+        
+        JFrame frame = new JFrame("Map");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(grid);
+        frame.pack();
+        frame.setVisible(true);
+        
 	}
 }
